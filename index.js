@@ -1,24 +1,33 @@
 const express = require('express');
+const { body, validationResult } = require('express-validator');
 const bodyParser = require('body-parser');
-const connection = require('./db');
+const pool = require('./db'); // Import the connection pool
+const cors = require('cors');  // Add this line to import the cors module
 
 const app = express();
 const PORT = 3000;
 
-app.use(express.urlencoded({extended : false}));
+app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(cors({ origin: 'http://localhost:3001' })); 
 
 // Route to add a task
-app.post('/tasks', (req, res) => {
-    const { task,  completed = false   } = req.body; 
-    
+
+app.post('/tasks', [
+    body('task').isString().trim().notEmpty(),
+    body('completed').isBoolean().optional(),
+  ], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    const { task, completed = false } = req.body;
     const query = 'INSERT INTO tasks (task, completed) VALUES (?, ?)';
-    
-    connection.query(query, [task, completed], (err, result) => {
+  
+    pool.query(query, [task, completed], (err, result) => {
       if (err) {
         return res.status(500).send(err);
-      }
-      
+      } 
       res.send({ id: result.insertId, task, completed });
     });
   });
@@ -26,7 +35,7 @@ app.post('/tasks', (req, res) => {
 // Route to get all tasks
 app.get('/tasks', (req, res) => {
   const query = 'SELECT * FROM tasks';
-  connection.query(query, (err, results) => {
+  pool.query(query, (err, results) => {
     if (err) {
       return res.status(500).send(err);
     }
@@ -38,7 +47,7 @@ app.get('/tasks', (req, res) => {
 app.delete('/tasks/:id', (req, res) => {
   const { id } = req.params;
   const query = 'DELETE FROM tasks WHERE id = ?';
-  connection.query(query, [id], (err, result) => {
+  pool.query(query, [id], (err, result) => {
     if (err) {
       return res.status(500).send(err);
     }
@@ -49,10 +58,10 @@ app.delete('/tasks/:id', (req, res) => {
 // Route to mark a task as complete or incomplete
 app.put('/tasks/:id/complete', (req, res) => {
   const { id } = req.params;
-  const { completed } = req.body; // Expecting a boolean value for completed
+  const { completed } = req.body;
 
   const query = 'UPDATE tasks SET completed = ? WHERE id = ?';
-  connection.query(query, [completed, id], (err, result) => {
+  pool.query(query, [completed, id], (err, result) => {
     if (err) {
       return res.status(500).send(err);
     }
@@ -63,10 +72,10 @@ app.put('/tasks/:id/complete', (req, res) => {
 // Route to edit a task description
 app.put('/tasks/:id', (req, res) => {
   const { id } = req.params;
-  const { task } = req.body; // New task description
+  const { task } = req.body;
 
   const query = 'UPDATE tasks SET task = ? WHERE id = ?';
-  connection.query(query, [task, id], (err, result) => {
+  pool.query(query, [task, id], (err, result) => {
     if (err) {
       return res.status(500).send(err);
     }
@@ -76,66 +85,25 @@ app.put('/tasks/:id', (req, res) => {
 
 // Route to filter tasks by completion status
 app.get('/tasks/filter', (req, res) => {
-  const { completed } = req.query; // "true" or "false"
-
-  const query = 'SELECT * FROM tasks WHERE completed = ?';
-  connection.query(query, [completed], (err, results) => {
-    if (err) {
-      return res.status(500).send(err);
+    const { completed } = req.query;
+  
+    if (completed !== '1' && completed !== '0') {
+      return res.status(400).send({ error: 'Invalid value for completed. Use "1" or "0".' });
     }
-    res.send(results);
-  });
-});
-
-// Route to mark a task as complete or incomplete
-app.put('/tasks/:id/complete', (req, res) => {
-    const { id } = req.params;
-    const { completed } = req.body; // Expecting a boolean value for completed
-  
-    const query = 'UPDATE tasks SET completed = ? WHERE id = ?';
-    connection.query(query, [completed, id], (err, result) => {
-      if (err) {
-        return res.status(500).send(err);
-      }
-      res.send({ message: 'Task updated successfully', id, completed });
-    });
-  });
-  
-  // Route to edit a task description
-  app.put('/tasks/:id', (req, res) => {
-    const { id } = req.params;
-    const { task } = req.body; // New task description
-  
-    const query = 'UPDATE tasks SET task = ? WHERE id = ?';
-    connection.query(query, [task, id], (err, result) => {
-      if (err) {
-        return res.status(500).send(err);
-      }
-      res.send({ message: 'Task updated successfully', id, task });
-    });
-  });
-  
-  // Route to filter tasks by completion status
-  app.get('/tasks/filter', (req, res) => {
-    const { completed } = req.query; // "true" or "false"
   
     const query = 'SELECT * FROM tasks WHERE completed = ?';
-    connection.query(query, [completed], (err, results) => {
+    const isCompleted = completed === '1' ? 1 : 0;
+  
+    // Use pool to query the database
+    pool.query(query, [isCompleted], (err, results) => {
       if (err) {
+        console.error('Query error:', err);
         return res.status(500).send(err);
       }
       res.send(results);
     });
   });
 
-
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
-
-
-// Issue: "Database connection issue"
-// Prompt to Gen AI: "How do I troubleshoot a database connection error in Node.js with MySQL?"
-// Solution: Gen AI suggested checking the database credentials and using a simple test script to verify the connection.
-
-
