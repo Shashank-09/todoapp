@@ -7,7 +7,7 @@ const pool = mysql.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   waitForConnections: true,
-  connectionLimit: 10, // Adjust the limit as per your app's needs
+  connectionLimit: 10,
   queueLimit: 0
 });
 
@@ -18,7 +18,7 @@ pool.getConnection((err, connection) => {
     console.error('Database connection failed:', err.stack);
   } else {
     console.log('Connected to database.');
-    connection.release(); // Release the connection back to the pool
+    connection.release(); 
   }
 });
 
