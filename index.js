@@ -1,8 +1,8 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const bodyParser = require('body-parser');
-const pool = require('./db'); // Import the connection pool
-const cors = require('cors');  // Add this line to import the cors module
+const pool = require('./db');
+const cors = require('cors');  
 
 const app = express();
 const PORT = 3000;
