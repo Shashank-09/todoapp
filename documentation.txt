@@ -1,0 +1,211 @@
+To-Do List Web Application API Documentation
+Overview
+This API allows users to manage tasks in a To-Do list. The application supports operations to add, view, update, and delete tasks. It interacts with a MySQL database to store and retrieve task information. The API uses Express.js and integrates middleware for input validation and error handling.
+
+API Routes
+1. POST /tasks
+Description: Add a new task to the database.
+Request Body:
+task (string, required): The description of the task.
+completed (boolean, optional, default: false): Indicates if the task is completed.
+Response:
+id: The ID of the newly created task.
+task: The task description.
+completed: Whether the task is marked as complete.
+Validation:
+task: Must be a non-empty string.
+completed: Must be a boolean (optional, default is false).
+Example Request:
+json
+Copy code
+POST /tasks
+{
+  "task": "Buy groceries",
+  "completed": false
+}
+Example Response:
+json
+Copy code
+{
+  "id": 1,
+  "task": "Buy groceries",
+  "completed": false
+}
+2. GET /tasks
+Description: Retrieve all tasks from the database.
+Response:
+An array of task objects with fields: id, task, completed.
+Example Request:
+json
+Copy code
+GET /tasks
+Example Response:
+json
+Copy code
+[
+  {
+    "id": 1,
+    "task": "Buy groceries",
+    "completed": false
+  },
+  {
+    "id": 2,
+    "task": "Clean the house",
+    "completed": true
+  }
+]
+3. DELETE /tasks/
+Description: Delete a task by its ID.
+Path Parameter:
+id (integer): The ID of the task to delete.
+Response:
+message: Confirmation message that the task was deleted.
+Example Request:
+json
+Copy code
+DELETE /tasks/1
+Example Response:
+json
+Copy code
+{
+  "message": "Task deleted successfully"
+}
+4. PUT /tasks/
+/complete
+Description: Mark a task as completed or incomplete.
+Path Parameter:
+id (integer): The ID of the task to update.
+Request Body:
+completed (boolean): Whether the task should be marked as completed.
+Response:
+message: Confirmation message indicating task update status.
+id: The ID of the task updated.
+completed: The updated completion status.
+Example Request:
+json
+Copy code
+PUT /tasks/1/complete
+{
+  "completed": true
+}
+Example Response:
+json
+Copy code
+{
+  "message": "Task updated successfully",
+  "id": 1,
+  "completed": true
+}
+5. PUT /tasks/
+Description: Edit the description of an existing task.
+Path Parameter:
+id (integer): The ID of the task to update.
+Request Body:
+task (string): The new task description.
+Response:
+message: Confirmation message indicating task update status.
+id: The ID of the task updated.
+task: The updated task description.
+Example Request:
+json
+Copy code
+PUT /tasks/1
+{
+  "task": "Buy groceries and cook dinner"
+}
+Example Response:
+json
+Copy code
+{
+  "message": "Task updated successfully",
+  "id": 1,
+  "task": "Buy groceries and cook dinner"
+}
+6. GET /tasks/filter
+Description: Filter tasks by completion status.
+Query Parameters:
+completed (1 or 0): The completion status to filter by.
+1 = Completed tasks.
+0 = Incomplete tasks.
+Response:
+An array of tasks that match the completion status filter.
+Example Request:
+json
+Copy code
+GET /tasks/filter?completed=1
+Example Response:
+json
+Copy code
+[
+  {
+    "id": 2,
+    "task": "Clean the house",
+    "completed": true
+  }
+]
+Error Responses
+400 Bad Request: Invalid or missing required parameters.
+404 Not Found: Task ID not found.
+500 Internal Server Error: Database or server-related issues.
+Setup Instructions
+Prerequisites
+Node.js and npm installed.
+A MySQL database with a table named tasks with columns: id, task, and completed.
+Dependencies
+express: Web framework for Node.js.
+express-validator: Middleware for input validation.
+body-parser: Middleware for parsing JSON request bodies.
+cors: Middleware for enabling Cross-Origin Resource Sharing (CORS).
+mysql2: MySQL client for Node.js.
+Installation Steps
+Clone the repository and navigate to the project directory:
+
+bash
+Copy code
+git clone <repository_url>
+cd todo-app
+Install dependencies:
+
+bash
+Copy code
+npm install
+Set up the MySQL database:
+
+Create a database and table:
+sql
+Copy code
+CREATE DATABASE todo_app;
+USE todo_app;
+
+CREATE TABLE tasks (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  task VARCHAR(255) NOT NULL,
+  completed BOOLEAN DEFAULT FALSE
+);
+Update the db.js file with your MySQL connection details:
+
+javascript
+Copy code
+const mysql = require('mysql2');
+const pool = mysql.createPool({
+  host: 'localhost',
+  user: 'root',
+  password: 'your_password',
+  database: 'todo_app'
+});
+
+module.exports = pool;
+Run the application:
+
+bash
+Copy code
+node app.js
+Access the API at http://localhost:3000.
+
+Contributions and Usage
+Gen AI Assistance: Use Gen AI to troubleshoot, enhance, and optimize the application, including refining SQL queries, adding features, and writing unit tests.
+Testing: Ensure to write unit tests for both front-end and back-end operations.
+Enhancements: You may request help from Gen AI to improve the functionality or suggest optimization methods.
+
+
+
