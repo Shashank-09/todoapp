@@ -37,16 +37,17 @@ const TaskItem = ({ task, fetchTasks }) => {
   };
 
   return (
-    <li>
+    <li className="task-item">
       <span
-        style={{ textDecoration: task.completed ? 'line-through' : 'none' }}
         onClick={handleToggleComplete}
+        className={task.completed ? 'completed' : 'not-completed'}
       >
         {task.task}
       </span>
-      <button className="edit-btn" onClick={handleEdit}>Edit</button>
-<button className="delete-btn" onClick={handleDelete}>Delete</button>
-
+      <div className="task-buttons">
+        <button className="edit-btn" onClick={handleEdit}>Edit</button>
+        <button className="delete-btn" onClick={handleDelete}>Delete</button>
+      </div>
     </li>
   );
 };

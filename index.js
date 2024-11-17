@@ -1,7 +1,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const bodyParser = require('body-parser');
-const pool = require('./db');
+const pool = require('./db'); 
 const cors = require('cors');  
 
 const app = express();
@@ -94,7 +94,6 @@ app.get('/tasks/filter', (req, res) => {
     const query = 'SELECT * FROM tasks WHERE completed = ?';
     const isCompleted = completed === '1' ? 1 : 0;
   
-    // Use pool to query the database
     pool.query(query, [isCompleted], (err, results) => {
       if (err) {
         console.error('Query error:', err);
